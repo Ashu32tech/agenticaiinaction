@@ -35,8 +35,11 @@ def fetch_news(state: AgentState) -> AgentState:
     try:
         r = requests.get(url)
         print(r.status_code, r.text)
-        articles = [a["title"] for a in r.json().get("articles", [])]
+        data = r.json()
+        articles = [a.get("title") for a in data.get("results", [])]
         headlines = "\n".join(articles)
+        print(f"headlines: {headlines}")
+        
     except Exception as e:
         headlines = f"Error fetching news: {e}"
     return {"headlines": headlines}
@@ -45,6 +48,7 @@ def summarize_news(state: AgentState) -> AgentState:
     print("Agent 2: Summarizing news...")
     prompt = f"Summarize these headlines about {state['topic']}:\n{state['headlines']}"
     resp = llm.invoke([HumanMessage(content=prompt)])
+    print(resp.content)
     return {"summary": resp.content}
 
 def analyze_sentiment(state: AgentState) -> AgentState:
