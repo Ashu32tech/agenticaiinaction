@@ -1,20 +1,26 @@
-import requests
+import sys
+import os
 
-def test_mcp():
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from feed_back_pipeline import run
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
+def test_feed_back_agent():
     payload = {
-        "row": {
-            "review_id": 1,
-            "review_text": "App crashes on login"
-        }
+        "review_id": 1,
+        "review_text": "App crashes on login"
     }
 
-    res = requests.post(
-        "http://localhost:8000/tools/process_feedback",
-        json=payload
-    )
+    res = run(payload)
 
-    assert res.status_code == 200
-    print(res.json())
+    assert isinstance(res, dict)
+    assert "category" in res
+    assert "priority" in res
+
+    print(res)
 
 if __name__ == "__main__":
-    test_mcp()
+    test_feed_back_agent()
