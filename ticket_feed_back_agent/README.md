@@ -1,4 +1,4 @@
-# Agentic AI Hybrid System (CrewAI + Streamlit)
+# Agentic AI Feedback System (CrewAI + Streamlit)
 
 ## Run Steps
 

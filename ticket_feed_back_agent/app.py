@@ -6,7 +6,7 @@ from feed_back_pipeline import run
 
 load_dotenv(override=True)
 
-st.title("CrewAI + MCP System (Direct)")
+st.title("Feedback Agent")
 
 file = st.file_uploader("Upload CSV", type=["csv"])
 

@@ -46,41 +46,41 @@ def run(row):
 
     log(t_id,"input",text)
 
-    t1 = Task(description=f"Read: {row}",agent=ag["csv"],expected_output="Structured understanding of the input row")
-    t2 = Task(description=f"Classify into Bug, Feature, Praise, Complaint, Spam: {text}",agent=ag["cls"],expected_output="One category label from [Bug, Feature, Praise, Complaint, Spam]")
+    csv_reader = Task(description=f"Read: {row}",agent=ag["csv"],expected_output="Structured understanding of the input row")
+    feedback_classifier = Task(description=f"Classify into Bug, Feature, Praise, Complaint, Spam: {text}",agent=ag["cls"],expected_output="One category label from [Bug, Feature, Praise, Complaint, Spam]")
 
-    crew1=Crew(agents=list(ag.values()),tasks=[t1,t2])
-    res=crew1.kickoff()
+    reader_classifier_crew=Crew(agents=list(ag.values()),tasks=[csv_reader,feedback_classifier])
+    res=reader_classifier_crew.kickoff()
     category=str(res).split()[0]
 
     log(t_id,"category",category)
 
     if category=="Bug":
-            t3 = Task(
+        bug_or_feture_requester = Task(
         description=f"Extract detailed bug report from: {text}",
         agent=ag["bug"],
         expected_output="Detailed bug report including steps, expected behavior, and actual behavior"
     )
     else:
-        t3 = Task(
+        bug_or_feture_requester = Task(
         description=f"Extract feature request details from: {text}",
         agent=ag["feat"],
         expected_output="Detailed feature request including requirement, benefit, and priority"
     )
 
-    t4 = Task(
+    ticket_creater = Task(
     description=f"Create structured ticket from: {text}",
     agent=ag["ticket"],
     expected_output="Structured ticket with title, description, priority, and category"
 )
-    t5 = Task(
+    ticket_validator = Task(
     description="Validate the created ticket for completeness and correctness",
     agent=ag["qa"],
     expected_output="Validation result with status (valid/invalid) and improvement suggestions"
 )
 
-    crew2=Crew(agents=list(ag.values()),tasks=[t3,t4,t5])
-    analysis=crew2.kickoff()
+    admin_crew=Crew(agents=list(ag.values()),tasks=[bug_or_feture_requester,ticket_creater,ticket_validator])
+    analysis=admin_crew.kickoff()
 
     ticket={
         "trace_id":t_id,
