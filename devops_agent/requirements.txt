@@ -1,0 +1,9 @@
+
+streamlit
+crewai
+langgraph
+langchain-openai
+sentence-transformers
+faiss-cpu
+kubernetes
+pydantic>=2.12.2,<3
