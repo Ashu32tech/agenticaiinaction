@@ -6,7 +6,8 @@ def run_flow(query):
     state = {"query": query}
 
     # 🔌 MCP calls
-    pods = get_pods("default")
+    pods = get_pods("micro-demo")
+    print("MCP get_pods response:", pods)  # Debug log
     
     # handle MCP response safely
     if isinstance(pods, dict) and "result" in pods:
@@ -15,6 +16,7 @@ def run_flow(query):
     pod = pods[0]["name"]
 
     logs = get_pod_logs(pod)
+    print("MCP get_pod_logs response:", logs)  # Debug log
     
     if isinstance(logs, dict) and "result" in logs:
         logs = logs["result"]

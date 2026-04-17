@@ -2,6 +2,8 @@
 from mcp.server.fastmcp import FastMCP
 import subprocess
 
+print("🚀 Initializing MCP server...")
+
 mcp = FastMCP("k8s")
 
 @mcp.tool()
@@ -34,7 +36,7 @@ def get_pod_logs(pod_name: str):
     """Fetch pod logs"""
     try:
         return subprocess.check_output(
-            ["kubectl", "logs", pod_name],
+            ["kubectl", "logs", pod_name,"-n", "micro-demo"],
             text=True
         )
     except:
@@ -45,11 +47,12 @@ def get_pod_logs(pod_name: str):
 def restart_pod(pod_name: str):
     """Restart pod"""
     try:
-        subprocess.call(["kubectl", "delete", "pod", pod_name])
+        subprocess.call(["kubectl", "delete", "pod", pod_name, "-n", "micro-demo"])
         return f"{pod_name} restarted"
     except:
         return "Mock restart"
         
 
 if __name__ == "__main__":
+    print("✅ MCP server started and waiting for client...")
     mcp.run()
