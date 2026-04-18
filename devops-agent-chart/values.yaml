@@ -1,0 +1,24 @@
+namespace: micro-demo
+
+image:
+  repository: devops-agent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8501
+
+env:
+  OPENAI_API_KEY: "replace-me"
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+
+rbac:
+  create: true
