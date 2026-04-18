@@ -21,6 +21,10 @@ def run_flow(query):
     if isinstance(logs, dict) and "result" in logs:
         logs = logs["result"]
 
+    logs = extract_key_lines(logs)
+
+    print("Extracted key log lines:", logs)  # Debug log
+
     # 📚 RAG
     context = retrieve_context(logs)
 
@@ -42,6 +46,11 @@ def run_flow(query):
 
     return state
 
+def extract_key_lines(logs):
+    keywords = ["error", "exception", "fail", "OOMKilled", "CrashLoopBackOff"]
+    return "\n".join(
+        [line for line in logs.split("\n") if any(k.lower() in line.lower() for k in keywords)]
+    )
 
 def execute_action(state):
     pod = state["decision"]["pod"]

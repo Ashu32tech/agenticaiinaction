@@ -1,9 +1,10 @@
 
 streamlit
 crewai
-langgraph
+langchain
 langchain-openai
-sentence-transformers
 faiss-cpu
-kubernetes
+numpy
+python-dotenv
+sentence-transformers
 pydantic>=2.12.2,<3

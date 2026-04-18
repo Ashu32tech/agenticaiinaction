@@ -27,4 +27,5 @@ class QuadrantDB:
             index, texts = self.indexes[key]
             D, I = index.search(np.array(q).astype("float32"), 1)
             results.append({key: texts[I[0][0]]})
+        print("RAG search results:", results)  # Debug log    
         return results
