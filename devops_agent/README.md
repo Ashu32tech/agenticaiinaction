@@ -294,3 +294,21 @@ You now have a system that is:
 ---
 
 **Built for modern DevOps + Agentic AI systems 🚀**
+
+docker build -t devops-agent .
+
+
+docker build -t devops-agent:latest .
+
+minikube image load devops-agent:latest
+kubectl rollout restart deployment devops-agent -n micro-demo
+
+minikube image load devops-agent:latest --daemon --alsologtostderr -v=1
+
+
+helm install devops-agent . --set env.OPENAI_API_KEY="replac me"
+
+helm upgrade devops-agent . --set env.OPENAI_API_KEY="replac me"
+
+
+minikube service devops-agent -n micro-demo
