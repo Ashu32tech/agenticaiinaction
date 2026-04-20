@@ -1,60 +1,95 @@
 from backend.agents import run_agents
 from backend.mcp_tools import get_pods, get_pod_logs, restart_pod
 from backend.rag.retriever import retrieve_context
+import time
+
 
 def run_flow(query):
     state = {"query": query}
 
-    # 🔌 MCP calls
-    pods = get_pods("micro-demo")
-    print("MCP get_pods response:", pods)  # Debug log
-    
-    # handle MCP response safely
-    if isinstance(pods, dict) and "result" in pods:
-        pods = pods["result"]
+    try:
+        print("🚀 Starting run_flow")
 
-    pod = pods[0]["name"]
+        pods = get_pods("micro-demo")
+        if isinstance(pods, dict) and "result" in pods:
+            pods = pods["result"]
 
-    logs = get_pod_logs(pod)
-    print("MCP get_pod_logs response:", logs)  # Debug log
-    
-    if isinstance(logs, dict) and "result" in logs:
-        logs = logs["result"]
+        if not pods:
+            return {"error": "No pods found"}
 
-    logs = extract_key_lines(logs)
+        pod = next(
+            (p["name"] for p in pods if p.get("status") != "Running"),
+            pods[0]["name"]
+        )
 
-    print("Extracted key log lines:", logs)  # Debug log
+        print("📦 Selected pod:", pod)
 
-    # 📚 RAG
-    context = retrieve_context(logs)
+        logs = get_pod_logs(pod)
+        if isinstance(logs, dict) and "result" in logs:
+            logs = logs["result"]
 
-    # 🤖 CrewAI
-    root_cause = run_agents(query, logs, context)
+        logs = extract_key_lines(logs)
 
-    decision = {
-        "pod": pod,
-        "root_cause": root_cause,
-        "action": "restart_pod"
-    }
+        print("📜 Logs extracted")
 
-    state.update({
-        "pods": pods,
-        "logs": logs,
-        "context": context,
-        "decision": decision
-    })
+        # RAG
+        context = retrieve_context(logs)
 
-    return state
+        print("📚 Context ready")
+
+        # CrewAI (can be slow)
+        start = time.time()
+        root_cause = run_agents(query, logs, context)
+        print(f"🧠 CrewAI completed in {time.time() - start:.2f}s")
+
+        decision = {
+            "pod": pod,
+            "root_cause": root_cause,
+            "action": "restart_pod",
+            "requires_approval": True
+        }
+
+        state.update({
+            "pods": pods,
+            "logs": logs,
+            "context": context,
+            "decision": decision
+        })
+
+        return state
+
+    except Exception as e:
+        print("❌ ERROR:", e)
+        return {"error": str(e)}
+
 
 def extract_key_lines(logs):
-    keywords = ["error", "exception", "fail", "OOMKilled", "CrashLoopBackOff"]
+    keywords = ["error", "exception", "fail", "oomkilled", "crashloopbackoff"]
     return "\n".join(
-        [line for line in logs.split("\n") if any(k.lower() in line.lower() for k in keywords)]
+        [line for line in logs.split("\n") if any(k in line.lower() for k in keywords)]
     )
 
+
 def execute_action(state):
-    pod = state["decision"]["pod"]
+    try:
+        decision = state.get("decision", {})
 
-    result = restart_pod(pod)
+        if decision.get("requires_approval"):
+            return {"status": "blocked", "message": "Approval required"}
 
-    return result
+        pod = decision.get("pod")
+        if not pod:
+            return {"error": "No pod specified"}
+
+        print("⚡ Restarting pod:", pod)
+
+        result = restart_pod(pod)
+
+        return {
+            "status": "success",
+            "pod": pod,
+            "result": result
+        }
+
+    except Exception as e:
+        return {"error": str(e)}

@@ -8,17 +8,19 @@ image:
 service:
   type: NodePort
   port: 8501
+  targetPort: 8501
+  nodePort: 30090   # optional but recommended
 
 env:
-  OPENAI_API_KEY: "replace-me"
+  OPENAI_API_KEY: "change-me"
 
 resources:
   limits:
+    cpu: "1"
+    memory: "1Gi"
+  requests:
     cpu: "500m"
     memory: "512Mi"
-  requests:
-    cpu: "250m"
-    memory: "256Mi"
 
 rbac:
   create: true
